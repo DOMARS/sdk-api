@@ -139,6 +139,24 @@ The <a href="/windows/desktop/api/minidumpapiset/nc-minidumpapiset-minidump_call
     <a href="/windows/desktop/Debug/getexceptioninformation">GetExceptionInformation</a>. Alternatively, you 
     can call the function from a new worker thread and filter this worker thread from the dump.
 
+Consider how the heap dump flags are set for reliable dump collection. This example #define shows selective overriding of these flags to allow the minidump to complete in additional scenarios. For example, adding the `MiniDumpIgnoreInaccessibleMemory` flag to your call, will help to avoid the *Failed with exception: Failed to create process dump* that can occur when certain areas of memory are not available. 
+
+```cpp
+#define HEAP_DUMP_FLAGS                         \
+    (MiniDumpWithDataSegs                       \
+        | MiniDumpWithProcessThreadData         \
+        | MiniDumpWithHandleData                \
+        | MiniDumpWithPrivateReadWriteMemory    \
+        | MiniDumpWithUnloadedModules           \
+        | MiniDumpWithPrivateWriteCopyMemory    \
+        | MiniDumpWithFullMemoryInfo            \
+        | MiniDumpWithThreadInfo                \
+        | MiniDumpWithTokenInformation          \
+        | MiniDumpWithIptTrace                  \
+        | MiniDumpIgnoreInaccessibleMemory)
+```
+
+
 All DbgHelp functions, such as this one, are single threaded. Therefore, calls from more than one thread to 
     this function will likely result in unexpected behavior or memory corruption. To avoid this, you must synchronize 
     all concurrent calls from more than one thread to this function.
